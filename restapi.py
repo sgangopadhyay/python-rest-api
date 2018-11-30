@@ -39,8 +39,11 @@ def show_all():
 # DISPLAY ALL DATA FROM DATABASE USING THERE ID IN JSON FORMAT
 @app.route('/userbyid/<int:id>', methods = ['GET'])
 def show_by_id(id):
-    data = APiUserModel.query.filter_by(id = id).first()
-    return jsonify({"id":data.id, "name":data.name, "email":data.email})
+    try:
+        data = APiUserModel.query.filter_by(id = id).first()
+        return jsonify({"id":data.id, "name":data.name, "email":data.email})
+    except:
+        return jsonify({"message":"ID does not exist"})
 
 # CREATE NEW DATA INTO DATABASE AND DISPLAY THE NEW DATA IN JSON FORMAT USING THE POSTMAN API PROGRAM
 @app.route('/write', methods = ['POST'])
@@ -72,6 +75,7 @@ def update_by_id(id):
         api_user_model.email = email
         save_to_database.commit()
     except:
+        return jsonify({"message":"ID does not exist"})
         save_to_database.rollback()
         save_to_database.flush()
     id = api_user_model.id
@@ -81,10 +85,13 @@ def update_by_id(id):
 # DELETE USING DELETE METHOD
 @app.route('/delete/<int:id>', methods = ['DELETE'])
 def delete(id):
-    save_to_database = db.session
-    APiUserModel.query.filter_by(id = id).delete() 
-    save_to_database.commit()
-    return show_all()
+    try:
+        save_to_database = db.session
+        APiUserModel.query.filter_by(id = id).delete() 
+        save_to_database.commit()
+        return show_all()
+    except:
+        return jsonify({"message":"ID does not exist"})       
 
 if __name__ == '__main__':
     db.create_all()
